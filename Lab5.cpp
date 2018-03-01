@@ -45,11 +45,14 @@ bool IsRequestLessEqual(int i) {
   // TODO: implement this function
   //
   bool result = true;
-  for (int j = 0; j < sizeof(Request[i]); j++) {
+  for (int j = 0; j < numResources; j++) {
       //cout << "Request[" << i << "][" << j << "]: " << Request[i][j] << " , Available[" << j << "]: " << Available[j] << std::endl;
       if (Request[i][j] > Available[j]) {
           result = false;
-         // cout << "did it" << std::endl;
+          //cout << "did it" << std::endl;
+      }
+      else {
+          Available[j] -= Request[i][j];
       }
   }
   return result;
@@ -63,8 +66,10 @@ void AddToAvailable(int i) {
   //
   // TODO: implement this function
   //
-    for (int j = 0; j < sizeof(Allocation[i]); j++)
-        Available[j] = Allocation[i][j];
+    for (int j = 0; j < numResources; j++) {
+        //cout << "Adding " << Allocation[i][j] << " to Available[" << j << "]" << std::endl;
+        Available[j] += Allocation[i][j];
+    }
 }
 
 // PrintDeadlocks - print indices of deadlocked processes
@@ -73,16 +78,30 @@ void PrintDeadlocks(void) {
   //
   // TODO: implement this function
   //
-    cout << sizeof(Available) << std::endl;
-    for (int i = 0; i < kMaxProcesses; i++) {
-        if (IsRequestLessEqual(i)) {
+  //cout << "numProcess: " << numProcesses << std::endl;
+  //cout << "numResources: " << numResources << std::endl;
+    cout << "deadlocks: ";
+    int tempProcess;
+    for (int i = 0; i < numResources; i++) { // Column
+        tempProcess = -1;
+        for (int j = 0; j < numProcesses; j++) { // Row
+            if (Request[j][i] != 0) {
+                //cout << "Process #" << j << std::endl;
+                tempProcess = j;
+            }
+        }
+        if (tempProcess == -1) {
             AddToAvailable(i);
         }
         else {
-            cout << "deadlock?: " << i << std::endl;
+            if (IsRequestLessEqual(tempProcess)) {
+                AddToAvailable(tempProcess);
+            }
+            else {
+                cout << i << " ";
+            }    
         }
     }
-    cout << "Deadlocked process: ";
 }
 
 // ReadSystemConfig - read the system configuration from the
